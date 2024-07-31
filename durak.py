@@ -1,6 +1,7 @@
 import numpy as np
 from random import shuffle
 from copy import deepcopy
+from time import sleep
 card_str_dict = {0: "Hearts", 1: "Diamonds", 2: "Clubs", 3: "Spades"}
 
 class Card:
@@ -23,7 +24,8 @@ class Card:
 
 def card_i(i): #get card by absolute value (cards arranged in order by value within suit
     return Card( suit = np.floor( i / 13), val = int(i%13) )
-
+def i_card(card): #get absolute value of card
+    return 13*card.suit + card.val
 #it's really just a fancy list...
 class Hand: #it holds cards. The deck is a hand. Piles are hands. Players are hands.
     def __init__(self, deck = None, name = "HAND"):
@@ -99,6 +101,31 @@ class Hand: #it holds cards. The deck is a hand. Piles are hands. Players are ha
 
 class Human_Player(Hand):
     def decision_process(self, possibility_vect):
+        v = possibility_vect
+        print(np.sum(v[:-1]))
+        if np.sum(v[:-1]) == 0:
+            sleep(1)
+            print("DEFAULT END TURN / FORFEIT")
+            sleep(1)
+            return 52
+        c_list = [] #list of possible cards from hand and possibility mask
+        for i, val in enumerate(v[:-1]): #ignore 52 "FORFEIT"
+            if val: c_list.append(card_i(i)) # if card is possible, get the corresponding Card object
+        c_dict = {} #dictionary of possible inputs vs return values (ints)
+        print("\tYOUR HAND:")
+        i = 0
+        for card in self: #for card in hand
+            if card in c_list: #if card is a possibility
+                nstr = f"({i})" #give it a number
+                c_dict[i] = i_card(card) #get the Card() -> int association
+                i += 1 
+            else: nstr = ' • '
+            print(f"\t{nstr}\t{card}")
+        print(f"\t({i})\tEND TURN / FORFEIT")
+        c_dict[i] = 52 #don't forget the forfeit option!
+        return c_dict[int(input("INPUT OPTION #: "))]
+        
+    def decision_process_old(self, possibility_vect):
         print(self)
         v = possibility_vect
         for i, val in enumerate(v):
@@ -134,9 +161,11 @@ class Round:
         print("\n\n\t\t\tROUND START")#,self.a, "\n", self.d)
         
     def start(self):
+        sleep(1)
         while True: #until return 
             print("\t\t\tATTACKING")
             self.do_attack()
+            sleep(1)
             
             if self.open_attacks.n_cards == 0: #if no cards are played that implies a forfeit
                 return self.hands, "ATTACK FORFEIT"
@@ -145,6 +174,7 @@ class Round:
             
             while self.open_attacks.n_cards > 0: #while there are open attacks...
                 print(self.open_attacks)
+                sleep(1)
                 if self.do_defend() == "DEFENCE FORFEIT": #pick up the cards!
                     self.d = self.d + self.open_attacks
                     self.d = self.d + self.discard_pile
@@ -162,6 +192,7 @@ class Round:
     def do_attack(self):
         #limit cards played according to size of other guy's hand
         while self.d.n_cards > self.open_attacks.n_cards and bool(self.a): #play as many cards as you wish...
+            sleep(1)
             #get attacker's choice. Pass the constraints from the round information
             a_card = self.a.attack(self.attack_possibilities_mat())
             if type(a_card) == Card: #if a card is played, put it into the attacks section
@@ -171,6 +202,7 @@ class Round:
         if self.a: return "DONE" #if attacker still has cards, all is well
         else: return "OUT" #if attacker is out of cards, take note
     def do_defend(self):
+        sleep(1)
         #get defender's choice. Pass the constraints from the round information
         d_card = self.d.defend(self.defence_possibilities_mat()) 
         if type(d_card) == str: #if it's not a card, it's a forfeit
@@ -228,7 +260,9 @@ class Game:
 
         hands, result = Round( self.players[i], self.players[1-i], self.trump_card.suit).start()
         self.players[i], self.players[1-i] = hands #hard update on hands
-
+        sleep(1)
+        print(result)
+        sleep(1)
         #print out player hands... don't do this if you're playing fair
         #for player in self.players: print("END ROUND:", player)
 
