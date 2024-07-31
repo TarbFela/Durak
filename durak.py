@@ -221,7 +221,7 @@ class Round:
             a_card = self.a.attack(self.attack_possibilities_mat())
             if type(a_card) == Card: #if a card is played, put it into the attacks section
                 self.open_attacks.append(a_card)
-                print(self.open_attacks)
+                if type(self.a) == Human_Player: print(self.open_attacks)
             else: return "DONE" #go until attacker returns a "forfeit"
         if self.a: return "DONE" #if attacker still has cards, all is well
         else: return "OUT" #if attacker is out of cards, take note
