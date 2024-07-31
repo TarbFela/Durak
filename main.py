@@ -1,0 +1,3 @@
+from durak import *
+
+Play()
